@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Передзвони мені — Promo Effect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0c0c0b; --surface: #131310; --border: #222220; --border-hover: #333330;
+    --text: #e8e3d8; --muted: #55534a; --accent: #e8c84a; --accent-dim: rgba(232,200,74,0.08);
+    --danger: #e84a4a; --font-mono: 'Martian Mono', monospace; --font-serif: 'Cormorant Garamond', serif;
+  }
+  html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-mono); font-size: 14px; line-height: 1.5; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; opacity: 0.6; }
+  .page { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; max-width: 1100px; margin: 0 auto; min-height: 100vh; }
+  .left { padding: 3rem 2rem 3rem 3rem; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; animation: fadeIn 0.4s 0.1s ease forwards; opacity: 0; }
+  .logo { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+  .logo::before { content: ''; display: block; width: 18px; height: 1px; background: var(--muted); }
+  .left-main { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .left-tag { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem; }
+  h1 { font-family: var(--font-serif); font-size: clamp(3rem,5vw,5rem); font-weight: 600; line-height: 0.95; color: var(--text); margin-bottom: 2rem; }
+  h1 em { font-style: italic; color: var(--accent); }
+  .left-desc { font-size: 12px; color: var(--muted); line-height: 1.8; max-width: 280px; border-left: 2px solid var(--border); padding-left: 1rem; }
+  .left-footer { font-size: 10px; color: #333; letter-spacing: 0.1em; }
+  .right { padding: 3rem 3rem 3rem 2.5rem; display: flex; flex-direction: column; animation: fadeIn 0.4s 0.25s ease forwards; opacity: 0; }
+  .step-indicator { display: flex; gap: 4px; margin-bottom: 2.5rem; }
+  .step-dot { height: 2px; flex: 1; background: var(--border); transition: background 0.4s; }
+  .step-dot.done { background: var(--accent); }
+  .mood-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .mood-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 2rem; }
+  .mood-btn { padding: 12px 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all 0.18s; border-radius: 2px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .mood-btn:hover { border-color: var(--border-hover); color: var(--text); }
+  .mood-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .mood-icon { font-size: 20px; line-height: 1; }
+  .mood-name { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .field { margin-bottom: 1.5rem; }
+  .field-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .field-label span { color: #2a2a28; }
+  textarea, input[type="tel"] { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: var(--font-mono); font-size: 13px; padding: 14px 16px; border-radius: 2px; outline: none; transition: border-color 0.2s; resize: none; appearance: none; }
+  textarea { min-height: 100px; line-height: 1.7; }
+  textarea::placeholder, input::placeholder { color: #2d2d2b; }
+  textarea:focus, input:focus { border-color: var(--accent); }
+  textarea.error, input.error { border-color: var(--danger); }
+  .phone-wrap { display: flex; }
+  .phone-prefix { background: var(--surface); border: 1px solid var(--border); border-right: none; color: var(--muted); font-family: var(--font-mono); font-size: 13px; padding: 14px 12px; border-radius: 2px 0 0 2px; white-space: nowrap; }
+  .phone-wrap input { border-radius: 0 2px 2px 0; flex: 1; }
+  .submit-btn { width: 100%; padding: 15px 20px; background: var(--accent); color: #0c0c0b; border: none; border-radius: 2px; font-family: var(--font-mono); font-size: 12px; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .submit-btn:hover { background: #f0d060; }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+  .status-line { margin-top: 12px; font-size: 11px; color: var(--muted); text-align: center; min-height: 18px; }
+  .status-line.err { color: var(--danger); }
+  .fine-print { margin-top: 1rem; font-size: 10px; color: #2d2d2b; line-height: 1.8; text-align: center; }
+  .result { display: none; flex-direction: column; justify-content: center; flex: 1; }
+  .result.visible { display: flex; }
+  .form-inner.hidden { display: none; }
+  .result-tag { font-size: 10px; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; margin-bottom: 1.5rem; }
+  .result-title { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; line-height: 1.1; margin-bottom: 0.5rem; }
+  .result-phone { font-size: 11px; color: var(--muted); margin-bottom: 2rem; }
+  .waveform { display: flex; align-items: center; gap: 3px; height: 30px; margin-bottom: 2rem; }
+  .wave-bar { width: 3px; background: var(--accent); border-radius: 2px; opacity: 0.6; animation: wave 1s ease-in-out infinite; }
+  @keyframes wave { 0%,100% { height: 4px; } 50% { height: 100%; } }
+  .artist-bubble { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 1.5rem; border-radius: 2px; margin-bottom: 1.5rem; min-height: 80px; }
+  .typing { display: flex; gap: 5px; align-items: center; height: 20px; }
+  .typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: pulse 1.2s infinite; opacity: 0.3; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,80%,100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+  .artist-bubble-text { font-family: var(--font-serif); font-size: 1.1rem; font-style: italic; line-height: 1.8; color: var(--text); }
+  .artist-bubble-meta { margin-top: 12px; font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
+  .reset-link { background: none; border: none; color: var(--muted); font-family: var(--font-mono); font-size: 11px; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; transition: color 0.2s; }
+  .reset-link:hover { color: var(--text); }
+  @media (max-width: 720px) {
+    .page { grid-template-columns: 1fr; }
+    .left { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 2rem 1.5rem; }
+    h1 { font-size: 3rem; margin-bottom: 1rem; }
+    .left-desc, .left-footer { display: none; }
+    .right { padding: 2rem 1.5rem; }
+  }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="left">
+    <div class="logo">Promo Effect</div>
+    <div class="left-main">
+      <div class="left-tag">/ дзвінок від артиста</div>
+      <h1>Ти<br><em>проєбав</em><br>подію?</h1>
+      <p class="left-desc">Розкажи що сталось і чому — артист передзвонить і пояснить, чому насправді все добре. Або ні. Залежить від настрою.</p>
+    </div>
+    <div class="left-footer">© 2025 Promo Effect. Всі права та образи захищені.</div>
+  </div>
+
+  <div class="right">
+    <div class="step-indicator">
+      <div class="step-dot done" id="s1"></div>
+      <div class="step-dot" id="s2"></div>
+      <div class="step-dot" id="s3"></div>
+      <div class="step-dot" id="s4"></div>
+    </div>
+
+    <div class="form-inner" id="formInner">
+      <div class="field">
+        <div class="mood-label">Настрій артиста під час дзвінка</div>
+        <div class="mood-grid">
+          <button class="mood-btn active" data-mood="ironic" onclick="selectMood(this)">
+            <span class="mood-icon">😏</span><span class="mood-name">Іронічний</span>
+          </button>
+          <button class="mood-btn" data-mood="angry" onclick="selectMood(this)">
+            <span class="mood-icon">😤</span><span class="mood-name">Злий</span>
+          </button>
+          <button class="mood-btn" data-mood="chill" onclick="selectMood(this)">
+            <span class="mood-icon">🤷</span><span class="mood-name">Пофігіст</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Яку подію ти проєбав? <span id="cnt1">0/400</span></div>
+        <textarea id="eventField" maxlength="400" placeholder="Не купив квиток вчасно, забув про передпродаж..." oninput="updateCount(this,'cnt1',400)"></textarea>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Чому так вийшло?</div>
+        <textarea id="reasonField" maxlength="300" placeholder="Класична відповідь: думав, що встигну." style="min-height:76px;"></textarea>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Номер для дзвінка</div>
+        <div class="phone-wrap">
+          <div class="phone-prefix">🇺🇦 +38</div>
+          <input type="tel" id="phoneField" placeholder="067 000 00 00" maxlength="13">
+        </div>
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.93 3.5 2 2 0 0 1 3.91 1.3h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Передзвони мені
+      </button>
+      <div class="status-line" id="statusLine"></div>
+      <p class="fine-print">Реальний дзвінок голосом артиста. Тільки Україна.<br>Дані не зберігаються після дзвінка.</p>
+    </div>
+
+    <div class="result" id="result">
+      <div class="result-tag">/ дзвінок заплановано</div>
+      <div class="result-title">Чекай на<br>дзвінок</div>
+      <div class="result-phone" id="resultPhone">На номер +38 ___</div>
+      <div class="waveform" id="waveform"></div>
+      <div class="artist-bubble">
+        <div class="typing" id="typingIndicator">
+          <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+        </div>
+        <div class="artist-bubble-text" id="artistText" style="display:none;"></div>
+        <div class="artist-bubble-meta" id="artistMeta" style="display:none;"></div>
+      </div>
+      <button class="reset-link" onclick="resetForm()">← заповнити ще раз</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ← після деплою сервера заміни на реальний URL
+  const SERVER_URL = 'http://localhost:3000';
+
+  let selectedMood = 'ironic';
+
+  function selectMood(el) {
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    selectedMood = el.dataset.mood;
+    updateSteps(2);
+  }
+
+  function updateCount(el, id, max) {
+    document.getElementById(id).textContent = el.value.length + '/' + max;
+    updateSteps(3);
+  }
+
+  function updateSteps(n) {
+    for (let i = 1; i <= 4; i++)
+      document.getElementById('s' + i).classList.toggle('done', i <= n);
+  }
+
+  function setStatus(msg, isErr = false) {
+    const el = document.getElementById('statusLine');
+    el.textContent = msg;
+    el.className = 'status-line' + (isErr ? ' err' : '');
+  }
+
+  async function handleSubmit() {
+    const event  = document.getElementById('eventField').value.trim();
+    const reason = document.getElementById('reasonField').value.trim();
+    const phone  = document.getElementById('phoneField').value.trim();
+    let valid = true;
+
+    ['eventField','phoneField'].forEach(id => document.getElementById(id).classList.remove('error'));
+    if (!event) { document.getElementById('eventField').classList.add('error'); valid = false; }
+    if (!phone) { document.getElementById('phoneField').classList.add('error'); valid = false; }
+    if (!valid) { setStatus("Заповни обов'язкові поля", true); return; }
+
+    document.getElementById('submitBtn').disabled = true;
+    setStatus('Генеруємо відповідь артиста...');
+    updateSteps(4);
+
+    try {
+      const res  = await fetch(`${SERVER_URL}/call`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, event, reason, mood: selectedMood })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Помилка сервера');
+
+      document.getElementById('formInner').classList.add('hidden');
+      document.getElementById('result').classList.add('visible');
+      document.getElementById('resultPhone').textContent = 'На номер +38 ' + phone;
+
+      const wf = document.getElementById('waveform');
+      for (let i = 0; i < 28; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'wave-bar';
+        bar.style.animationDelay = (i * 0.06) + 's';
+        bar.style.animationDuration = (0.7 + Math.random() * 0.8) + 's';
+        wf.appendChild(bar);
+      }
+
+      if (data.preview) {
+        setTimeout(() => {
+          document.getElementById('typingIndicator').style.display = 'none';
+          const t = document.getElementById('artistText');
+          const m = document.getElementById('artistMeta');
+          t.style.display = 'block'; m.style.display = 'block';
+          t.textContent = '\u201c' + data.preview + '\u201d';
+          m.textContent = '— артист / ' + selectedMood + ' режим';
+        }, 1500);
+      }
+    } catch(err) {
+      document.getElementById('submitBtn').disabled = false;
+      setStatus('Помилка: ' + err.message, true);
+      updateSteps(3);
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('result').classList.remove('visible');
+    document.getElementById('formInner').classList.remove('hidden');
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('eventField').value = '';
+    document.getElementById('reasonField').value = '';
+    document.getElementById('phoneField').value = '';
+    document.getElementById('cnt1').textContent = '0/400';
+    document.getElementById('waveform').innerHTML = '';
+    document.getElementById('typingIndicator').style.display = 'flex';
+    document.getElementById('artistText').style.display = 'none';
+    document.getElementById('artistMeta').style.display = 'none';
+    setStatus('');
+    updateSteps(1);
+  }
+
+  updateSteps(1);
+</script>
+</body>
+</html>
