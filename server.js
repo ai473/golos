@@ -74,37 +74,21 @@ async function generateArtistText(event, reason, mood) {
 
 // ─── КРОК 2: ELEVENLABS ГЕНЕРУЄ АУДІО ───────────────────────────────────────
 async function generateAudio(text) {
-  const audioStream = await eleven.textToSpeech.convert(
+  const audioBuffer = await eleven.textToSpeech.convert(
     CONFIG.elevenlabs.voiceId,
     {
       text,
       model_id: "eleven_multilingual_v2",
-      voice_settings: {
-        stability: 0.4,        // менше = більше емоцій
-        similarity_boost: 0.8, // схожість на оригінальний голос
-        style: 0.3,
-        use_speaker_boost: true,
-      },
+      voice_settings: { stability: 0.4, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true },
     }
   );
-
-  // зберігаємо mp3 з унікальним ім'ям
   const filename = `call_${Date.now()}.mp3`;
   const filepath = path.join(AUDIO_DIR, filename);
-  const writeStream = fs.createWriteStream(filepath);
-
-  await new Promise((resolve, reject) => {
-    audioStream.pipe(writeStream);
-    writeStream.on("finish", resolve);
-    writeStream.on("error", reject);
-  });
-
-  // публічна URL для Twilio
+  const chunks = [];
+  for await (const chunk of audioBuffer) { chunks.push(chunk); }
+  fs.writeFileSync(filepath, Buffer.concat(chunks));
   const publicUrl = `${CONFIG.server.baseUrl}/audio/${filename}`;
-
-  // видаляємо файл через 5 хвилин (після дзвінка вже не потрібен)
   setTimeout(() => fs.unlink(filepath, () => {}), 5 * 60 * 1000);
-
   return publicUrl;
 }
 
